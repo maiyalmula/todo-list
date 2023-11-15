@@ -1,35 +1,64 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import Todo from "./Todo";
+import "./styles.css";
+import { TaskType } from "./Todo";
+import { useState } from "react";
+import { v1 } from "uuid";
+
+export type FilterValuesType = "all" | "active" | "complited";
 
 function App() {
-  const [count, setCount] = useState(0)
+  let initialTasks: Array<TaskType> = [
+    { id: v1(), title: "css", isDone: true },
+    { id: v1(), title: "react", isDone: false },
+    { id: v1(), title: "html", isDone: true },
+  ];
+
+  let [tasks, setTasks] = useState(initialTasks);
+  const [filtered, setFIltered] = useState<FilterValuesType>("all");
+
+  function changeFilter(value: FilterValuesType) {
+    setFIltered(value);
+  }
+
+  function removeItem(id: string) {
+    let filteredTasks = tasks.filter((t) => t.id !== id);
+    setTasks(filteredTasks);
+  }
+
+  function addTask(title: string) {
+    let newTask = { id: v1(), title: title, isDone: false };
+    let newTasks = [newTask, ...tasks];
+    setTasks(newTasks);
+  }
+
+  function changeCheckbox(taskId: string, isDone: boolean) {
+    let task = tasks.find((t) => t.id === taskId);
+    if (task) {
+      task.isDone = isDone;
+    }
+    setTasks([...tasks]);
+  }
+
+  let tasksForTodoList = tasks;
+  if (filtered === "complited") {
+    tasksForTodoList = tasks.filter((t) => t.isDone === true);
+  }
+  if (filtered === "active") {
+    tasksForTodoList = tasks.filter((t) => t.isDone === false);
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="app">
+      <Todo
+        title="What to learn"
+        tasks={tasksForTodoList}
+        removeItem={removeItem}
+        changeFilter={changeFilter}
+        addTask={addTask}
+        changeCheckbox={changeCheckbox}
+      />
+    </div>
+  );
 }
 
-export default App
+export default App;
